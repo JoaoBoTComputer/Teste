@@ -1,0 +1,12 @@
+{
+    "env": {
+        "MYSQL_USER": "joao",
+        "MYSQL_PASSWORD":"61913918016",
+        "MYSQL_DATABASE":"funMidia",
+        "MYSQL_HOST":"localhost",
+        "MYSQL_PORT":"3306",
+
+        "JWT_KEY" : "aa",
+        "URL_API" : "http://localhost:3000/"
+    } 
+}
