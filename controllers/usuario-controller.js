@@ -2,6 +2,7 @@ const mysql  = require('../mysql');
 const bcrypt = require('bcrypt');
 const jwt    = require('jsonwebtoken');
 const { response } = require('express');
+const emailService = require('../services/email');
 
 
 exports.createUser = async(req,res,next) =>{
@@ -18,6 +19,8 @@ exports.createUser = async(req,res,next) =>{
 
         var hash = await bcrypt.hashSync(req.body.password,5);
 
+        console.log("Data ="+req);
+
         const token = jwt.sign({
             nome: req.body.nome,
             sobrenome:req.body.sobrenome,
@@ -28,35 +31,32 @@ exports.createUser = async(req,res,next) =>{
             process.env.JWT_KEY,
             {expiresIn: '24h' }
         );
-
+        
+        var ulrConfirmar = "http://localhost:3000/usuario/confirm/?token="+token;
         const response = {
-            message:'Confirmar cadastro no email',
-            ulr:'http://localhost:3000/usuario/confirm/?token='+token
+            message:'Confirme seu cadastro no email!',    
         } 
+
+        var bodyEmail = `
+        <html>
+        <body></body>
+        </html>
+        <strong>Acesse o link a baixo para confirma seu cadastro <a>{0}</a></strong>
+        `;
+
+        bodyEmail = bodyEmail.replace('{0}',ulrConfirmar);
+
+    
+
+        emailService.sendEmail(req.body.email,bodyEmail);
         
         
-
-        // query  = 'INSERT INTO usuario (nome,sobrenome,email,data_nascimento,password) VALUES(?,?,?,?,?)';
-        // result = await mysql.execute(query,
-        //     [req.body.nome,
-        //     req.body.sobrenome,
-        //     req.body.email,
-        //     req.body.data_nascimento,
-        //     hash]);
-
-        // const response ={
-        //     message : 'Usuario criado com sucesso',
-        //     createdUser :{
-        //         userId : result.insertId,
-        //         email: req.body.email
-        //     }
-        // }
-            
-        return res.status(201).send(response);
+        return res.status(200).send(response);
             
 
     }
     catch(error){
+        res.status(500).send();
         console.log(error)
         
     }
@@ -67,7 +67,6 @@ exports.login = async(req,resp,next)=>{
 
     try{
         
-
         const query  = 'SELECT * FROM usuario WHERE email =?';
         var result = await mysql.execute(query,[req.body.email]); 
 
@@ -95,7 +94,8 @@ exports.login = async(req,resp,next)=>{
 
 
     }catch(error){
-        return resp.status(500).send({error:error});
+        console.log(error);
+        return resp.status(500).send();
     }
 
 };
@@ -146,7 +146,7 @@ exports.confirmeRegister = async(req,res,next)=>{
  
     }catch(error){
         console.log(error);
-        return res.status(500).send({ error: error });
+        return res.status(500).send();
     }
     
 

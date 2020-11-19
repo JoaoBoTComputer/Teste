@@ -8,5 +8,7 @@
 
         "JWT_KEY" : "chave11212",
         "URL_API" : "http://localhost:3000/"
+
+        
     } 
 }
