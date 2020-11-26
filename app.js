@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 
 //importando rotas
 const rotaUsuario = require('./routes/usuario-route');
-
+const rotaMidia = require('./routes/midia-route');
 
 
 
@@ -36,6 +36,7 @@ app.use(bodyParser.json()); // isso faz com que a app só utilize json
 
 //rotas
 app.use('/usuario',rotaUsuario);
+app.use('/midia',rotaMidia);
 
 
 module.exports = app;
