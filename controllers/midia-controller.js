@@ -53,18 +53,77 @@ exports.searchMovie = async(req,res,next) =>{
 
 }
 
-exports.searchDatailsMovie = async(req) =>{
-    let id = req.body.id;
+exports.searchDatailsMovie = async(req,res,next) =>{
+    let id = req.query.id;
+
 
     await request(MOVIEDB_CONFIG.url_search_datails_movies.replace('{id}',id),{json:true},(err2,resp2,body2)=>{
-        if(err2)
+        if(err2){
             console.log("Erro na busca de detalhes:"+err2);
-        
-        createMovie(resp2.body);
-        // res.status(200).send();
+            res.status(500).send();
+        }
+            
+        res.status(200).send(createMovie(resp2.body));
     })
 }
 
+
+//ASSISTIDO
+exports.addAssistidos = async(req,res,next) =>{
+    try{
+        var query  = 'SELECT * FROM assistidos WHERE id_filme=? AND usuario_id =?';
+        var result = await mysql.execute(query,[req.body.id_filme,req.body.usuario_id]);
+
+        if(result.length > 0){
+            console.log("filme já está adicionando em favoritos");
+            return res.status(401).status("filme já está adicionando em favoritos");
+        }
+
+        query = 'INSERT INTO assistidos (id_filme,usuario_id) VALUES(?,?)';
+        var result = await mysql.execute(query,
+            [req.body.id_filme,
+            req.body.usuario_id]
+        );
+
+
+        res.status(200).send();
+
+    }catch(e){
+        console.log(e);
+        return res.status(500).send();
+    }
+}
+
+exports.getAssistidos = async(req,res,next) =>{
+    try{
+
+        var teste = [];
+
+        var query = "SELECT id_filme FROM assistidos WHERE usuario_id = ?"; 
+        var result = await mysql.execute(query,[req.query.id]);
+
+        for(let i =0; i < result.length; i++){
+            // console.log(result[i].id_filme);
+            let id = result[i].id_filme;
+            var save ={
+                id_filme : id
+            }
+
+            teste.push(save);
+        }
+
+
+        console.log(teste.length);
+
+        res.status(200).send(teste);
+
+    }catch(e){
+        console.log(e);
+        res.status(500).send();
+    }
+}
+
+//FAVORITO
 exports.addFavorito = async(req,res,next) =>{
     try{
         var query  = 'SELECT * FROM favorito WHERE id_filme=? AND usuario_id =?';
@@ -89,6 +148,99 @@ exports.addFavorito = async(req,res,next) =>{
         return res.status(500).send();
     }
 }
+exports.getFavoritos = async(req,res,next) =>{
+    try{
+
+        var teste = [];
+
+        var query = "SELECT id_filme FROM favorito WHERE usuario_id = ?"; 
+        var result = await mysql.execute(query,[req.query.id]);
+
+        for(let i =0; i < result.length; i++){
+            // console.log(result[i].id_filme);
+            let id = result[i].id_filme;
+            var save ={
+                id_filme : id
+            }
+
+            teste.push(save);
+            // await request(MOVIEDB_CONFIG.url_search_datails_movies.replace('{id}',id),{json:true},(err2,resp2,body2)=>{
+            //     if(err2)
+            //         console.log("Erro na busca de detalhes:"+err2);
+                
+            //     teste.push(createMovie(resp2.body));
+            //     if((i + 1) == result.length )
+            //         res.status(200).send("merda");
+            //     // res.status(200).send();
+            // })
+        }
+
+
+        console.log(teste.length);
+
+        res.status(200).send(teste);
+
+    }catch(e){
+        console.log(e);
+        res.status(500).send();
+    }
+}
+
+//ASSISTIR
+exports.getAssistir = async(req,res,next) =>{
+    try{
+
+        var teste = [];
+
+        var query = "SELECT id_filme FROM assistir WHERE usuario_id = ?"; 
+        var result = await mysql.execute(query,[req.query.id]);
+
+        for(let i =0; i < result.length; i++){
+            // console.log(result[i].id_filme);
+            let id = result[i].id_filme;
+            var save ={
+                id_filme : id
+            }
+
+            teste.push(save);
+        }
+
+
+        console.log(teste.length);
+
+        res.status(200).send(teste);
+
+    }catch(e){
+        console.log(e);
+        res.status(500).send();
+    }
+}
+
+exports.addAssistir = async(req,res,next) =>{
+    try{
+        var query  = 'SELECT * FROM assistir WHERE id_filme=? AND usuario_id =?';
+        var result = await mysql.execute(query,[req.body.id_filme,req.body.usuario_id]);
+
+        if(result.length > 0){
+            console.log("filme já está adicionando em favoritos");
+            return res.status(401).status("filme já está adicionando em favoritos");
+        }
+
+        query = 'INSERT INTO assistir (id_filme,usuario_id) VALUES(?,?)';
+        var result = await mysql.execute(query,
+            [req.body.id_filme,
+            req.body.usuario_id]
+        );
+
+
+        res.status(200).send();
+
+    }catch(e){
+        console.log(e);
+        return res.status(500).send();
+    }
+}
+
 
 function createMovie(body){
 
