@@ -19,7 +19,7 @@ exports.searchMovie = async(req,res,next) =>{
 
     if(query){
         var url = MOVIEDB_CONFIG.url_search_movies.replace('{0}',query);
-        // console.log(url);
+        
          await request(url,{json:true},(err,resp,body)=>{
             if(err){
                 console.log("error");
@@ -34,7 +34,6 @@ exports.searchMovie = async(req,res,next) =>{
                 movies.push(createMovie(results[i]));
             }
 
-            // console.log(movies.length);
 
             var response = {
                 pages : total_pages,
@@ -62,7 +61,8 @@ exports.searchDatailsMovie = async(req,res,next) =>{
             console.log("Erro na busca de detalhes:"+err2);
             res.status(500).send();
         }
-            
+        console.log(resp2.body);
+        
         res.status(200).send(createMovie(resp2.body));
     })
 }
@@ -157,22 +157,13 @@ exports.getFavoritos = async(req,res,next) =>{
         var result = await mysql.execute(query,[req.query.id]);
 
         for(let i =0; i < result.length; i++){
-            // console.log(result[i].id_filme);
             let id = result[i].id_filme;
             var save ={
                 id_filme : id
             }
 
             teste.push(save);
-            // await request(MOVIEDB_CONFIG.url_search_datails_movies.replace('{id}',id),{json:true},(err2,resp2,body2)=>{
-            //     if(err2)
-            //         console.log("Erro na busca de detalhes:"+err2);
-                
-            //     teste.push(createMovie(resp2.body));
-            //     if((i + 1) == result.length )
-            //         res.status(200).send("merda");
-            //     // res.status(200).send();
-            // })
+          
         }
 
 
@@ -241,6 +232,37 @@ exports.addAssistir = async(req,res,next) =>{
     }
 }
 
+exports.getPlaying = async(req,res,next) =>{
+
+    const movies =[];
+    var url = MOVIEDB_CONFIG.url_search_playing;
+    
+    await request(url,{json:true},(err,resp,body)=>{
+        if(err){
+            console.log("error");
+        }
+        
+        total_pages = resp.body.total_pages;
+        page = resp.body.page;
+
+        var results = resp.body.results;
+
+        for(let i = 0; i < results.length; i++){
+            movies.push(createMovie(results[i]));
+        }
+
+        console.log(movies.length);
+
+        var response = {
+            pages : total_pages,
+            movies : movies
+        }
+        return res.status(200).send(JSON.stringify(response));
+
+    });
+
+}
+
 
 function createMovie(body){
 
@@ -249,9 +271,24 @@ function createMovie(body){
     let titulo_original = body.original_title;
     let poster = body.poster_path;
     let sinopse = body.overview;
+    
     let data_lancamento = body.release_date;
+    let generos_id;
+    
+    if(body.genre_ids)
+        generos_id = body.genre_ids;
+    else
+        if(body.genres){
+            var ids = [];
+            for(let i =0; i < body.genres.length;i++){
+                ids.push(body.genres[i].id);
+            }
+            generos_id = ids;
+            console.log(generos_id);
+        }
+    
 
-    let movie = new Movie(id,titulo,titulo_original,poster,sinopse,data_lancamento);
+    let movie = new Movie(id,titulo,titulo_original,poster,sinopse,data_lancamento,generos_id);
 
     return movie;
     

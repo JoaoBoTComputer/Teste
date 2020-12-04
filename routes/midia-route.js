@@ -20,5 +20,9 @@ router.post("/assistir",midiaControlelr.addAssistir);
 router.get("/assistir/all?:id",midiaControlelr.getAssistir);
 router.get("/assistir/movie?:id",midiaControlelr.searchDatailsMovie);
 
+//No cinema
+
+router.get("/cinema",midiaControlelr.getPlaying);
+
 
 module.exports = router;
